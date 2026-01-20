@@ -1,0 +1,161 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Quarter Theme - Top level organizational unit
+model QuarterTheme {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  title         String
+  why           String?
+  status        String   @default("active") // active, paused, archived
+  startDate     DateTime @map("start_date")
+  endDate       DateTime @map("end_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  monthlyFocuses MonthlyFocus[]
+  weeklyThemes   WeeklyTheme[]
+  kpis           KPI[]
+
+  @@map("quarter_themes")
+}
+
+// Monthly Focus - Optional mid-level focus (0-2 per quarter)
+model MonthlyFocus {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  quarterThemeId  String   @map("quarter_theme_id")
+  title           String
+  monthStart      DateTime @map("month_start") @db.Date
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  quarterTheme QuarterTheme  @relation(fields: [quarterThemeId], references: [id], onDelete: Cascade)
+  weeklyThemes WeeklyTheme[]
+
+  @@map("monthly_focuses")
+}
+
+// Weekly Theme - Week-level focus
+model WeeklyTheme {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  quarterThemeId  String    @map("quarter_theme_id")
+  monthlyFocusId  String?   @map("monthly_focus_id")
+  title           String
+  weekStart       DateTime  @map("week_start") @db.Date
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  quarterTheme  QuarterTheme  @relation(fields: [quarterThemeId], references: [id], onDelete: Cascade)
+  monthlyFocus  MonthlyFocus? @relation(fields: [monthlyFocusId], references: [id], onDelete: SetNull)
+  tasks         Task[]
+
+  @@unique([userId, weekStart])
+  @@map("weekly_themes")
+}
+
+// KPI - Key Performance Indicator
+model KPI {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  quarterThemeId  String   @map("quarter_theme_id")
+  name            String
+  unit            String   @default("count")
+  cadence         String   @default("daily") // daily, weekly
+  target          Int?
+  actionTemplate  String?  @map("action_template")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  quarterTheme QuarterTheme @relation(fields: [quarterThemeId], references: [id], onDelete: Cascade)
+  entries      KPIEntry[]
+
+  @@map("kpis")
+}
+
+// KPI Entry - Daily value for a KPI
+model KPIEntry {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  kpiId     String   @map("kpi_id")
+  date      DateTime @db.Date
+  value     Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  kpi KPI @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+
+  @@unique([kpiId, date])
+  @@map("kpi_entries")
+}
+
+// Task - Daily task
+model Task {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  weeklyThemeId  String   @map("weekly_theme_id")
+  date           DateTime @db.Date
+  title          String
+  tinyStart      String   @map("tiny_start")
+  progressScore  Int      @default(0) @map("progress_score") // 0-10
+  status         String   @default("planned") // planned, done, skipped, archived
+  resistance     String?  // low, medium, high
+  skippedCount   Int      @default(0) @map("skipped_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  weeklyTheme WeeklyTheme @relation(fields: [weeklyThemeId], references: [id], onDelete: Cascade)
+  steps       TaskStep[]
+
+  @@map("tasks")
+}
+
+// Task Step - Checklist item for a task
+model TaskStep {
+  id        String   @id @default(uuid())
+  taskId    String   @map("task_id")
+  title     String
+  isDone    Boolean  @default(false) @map("is_done")
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("task_steps")
+}
+
+// Reflection - Nightly reflection
+model Reflection {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  date      DateTime @db.Date
+  energy    String   // low, medium, high
+  mood      String?  // down, neutral, good
+  did       String?
+  blocked   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@map("reflections")
+}
+
+
