@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import AppShell from "@/components/app/AppShell";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "seriouslife - Daily Progress Tracker",
-  description: "Track your KPIs, tasks, and daily progress",
+  title: "SeriousLife MVP",
+  description: "Low-friction action system",
 };
 
 export default function RootLayout({
@@ -14,11 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        <AppShell>{children}</AppShell>
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
-
-

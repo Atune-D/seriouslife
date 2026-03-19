@@ -15,6 +15,6 @@ export type Task = {
   id: string;
   title: string;
   tinyStart: string;
-  progress: number;
+  completed: boolean;
   subtasks: Subtask[];
 };

@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
+import AppShell from "@/components/AppShell";
 
 export default function Home() {
-  redirect("/today");
+  return <AppShell initialScope="today" />;
 }
 
 

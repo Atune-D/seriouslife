@@ -64,13 +64,13 @@ function Chip({
 }
 
 export default function HeaderChips() {
-  const { todayGoal, weekTheme, monthTheme, setTodayGoal, setWeekTheme, setMonthTheme } = useAppStore();
+  const { todayGoal, weeklyTheme, monthlyTheme, setTodayGoal, setWeeklyTheme, setMonthlyTheme } = useAppStore();
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      <Chip label="Today" value={todayGoal} placeholder="+ add today goal" onSave={setTodayGoal} />
-      <Chip label="Week" value={weekTheme} placeholder="+ add week theme" onSave={setWeekTheme} />
-      <Chip label="Month" value={monthTheme} placeholder="+ add month theme" onSave={setMonthTheme} />
+      <Chip label="Today Goal" value={todayGoal} placeholder="What matters today?" onSave={setTodayGoal} />
+      <Chip label="Weekly Theme" value={weeklyTheme} placeholder="This week's focus" onSave={setWeeklyTheme} />
+      <Chip label="Monthly Theme" value={monthlyTheme} placeholder="This month's direction" onSave={setMonthlyTheme} />
     </div>
   );
 }

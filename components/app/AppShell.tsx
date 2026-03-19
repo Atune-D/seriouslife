@@ -18,7 +18,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (pathname === "/today") return "Today";
     if (pathname === "/weekly") return "Weekly";
     if (pathname === "/monthly") return "Monthly";
-    if (pathname === "/goals") return "Goals & KPIs";
+    if (pathname === "/goals") return "Direction";
     return "seriouslife";
   };
 
@@ -26,7 +26,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (pathname === "/today") return "Your daily priorities";
     if (pathname === "/weekly") return "This week's focus";
     if (pathname === "/monthly") return "Monthly objectives";
-    if (pathname === "/goals") return "Your life priorities, clearly laid out";
+    if (pathname === "/goals") return "Your identity-level context";
     return vision;
   };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import type { Kpi, Task } from "./types";
+import type { Task } from "./types";
 
 type UIState = {
   isWhyOpen: boolean;
@@ -18,12 +18,21 @@ export const useUIStore = create<UIState>((set) => ({
 type AppState = {
   vision: string;
   setVision: (v: string) => void;
+  antiVision: string;
+  setAntiVision: (v: string) => void;
+  oneYearLens: string;
+  setOneYearLens: (v: string) => void;
+  constraints: string[];
+  addConstraint: (text: string) => void;
+  removeConstraint: (index: number) => void;
+  updateConstraint: (index: number, text: string) => void;
 
-  kpis: Kpi[];
-  addKpi: (name: string) => void;
-  removeKpi: (id: string) => void;
-  incKpi: (id: string) => void;
-  decKpi: (id: string) => void;
+  todayGoal: string;
+  setTodayGoal: (v: string) => void;
+  weeklyTheme: string;
+  setWeeklyTheme: (v: string) => void;
+  monthlyTheme: string;
+  setMonthlyTheme: (v: string) => void;
 
   todayTasks: Task[];
   weeklyTasks: Task[];
@@ -34,8 +43,7 @@ type AppState = {
   addMonthlyTask: (t: { title: string; tinyStart: string }) => void;
   
   updateTask: (scope: 'today' | 'weekly' | 'monthly', id: string, updates: Partial<Task>) => void;
-  setTaskProgress: (scope: 'today' | 'weekly' | 'monthly', id: string, progress: number) => void;
-  markTaskDone: (scope: 'today' | 'weekly' | 'monthly', id: string) => void;
+  toggleTaskComplete: (scope: 'today' | 'weekly' | 'monthly', id: string) => void;
   removeTask: (scope: 'today' | 'weekly' | 'monthly', id: string) => void;
   
   addSubtask: (scope: 'today' | 'weekly' | 'monthly', taskId: string, text: string) => void;
@@ -46,21 +54,21 @@ type AppState = {
 export const useAppStore = create<AppState>((set) => ({
   vision: "Build consistent action with low friction",
   setVision: (v) => set({ vision: v }),
+  antiVision: "Continue avoiding hard things, wasting time, and losing trust in myself",
+  setAntiVision: (v) => set({ antiVision: v }),
+  oneYearLens: "A year from now, I want to look back and see consistent daily action",
+  setOneYearLens: (v) => set({ oneYearLens: v }),
+  constraints: ["No more than 3 daily tasks", "2-minute start rule"],
+  addConstraint: (text) => set((s) => ({ constraints: [...s.constraints, text] })),
+  removeConstraint: (index) => set((s) => ({ constraints: s.constraints.filter((_, i) => i !== index) })),
+  updateConstraint: (index, text) => set((s) => ({ constraints: s.constraints.map((c, i) => i === index ? text : c) })),
 
-  kpis: [
-    { id: "k1", name: "2-min start", unit: "count", value: 0 },
-    { id: "k2", name: "Deep work blocks", unit: "count", value: 0 },
-  ],
-  addKpi: (name) =>
-    set((s) => ({
-      kpis: s.kpis.length >= 6 ? s.kpis : [...s.kpis, { id: crypto.randomUUID(), name, unit: "count", value: 0 }],
-    })),
-  removeKpi: (id) => set((s) => ({ kpis: s.kpis.filter((k) => k.id !== id) })),
-  incKpi: (id) => set((s) => ({ kpis: s.kpis.map((k) => (k.id === id ? { ...k, value: k.value + 1 } : k)) })),
-  decKpi: (id) =>
-    set((s) => ({
-      kpis: s.kpis.map((k) => (k.id === id ? { ...k, value: Math.max(0, k.value - 1) } : k)),
-    })),
+  todayGoal: "",
+  setTodayGoal: (v) => set({ todayGoal: v }),
+  weeklyTheme: "",
+  setWeeklyTheme: (v) => set({ weeklyTheme: v }),
+  monthlyTheme: "",
+  setMonthlyTheme: (v) => set({ monthlyTheme: v }),
 
   todayTasks: [],
   weeklyTasks: [],
@@ -68,24 +76,20 @@ export const useAppStore = create<AppState>((set) => ({
 
   addTodayTask: ({ title, tinyStart }) =>
     set((s) => ({
-      todayTasks: [...s.todayTasks, { id: crypto.randomUUID(), title, tinyStart, progress: 0, subtasks: [] }],
+      todayTasks: [...s.todayTasks, { id: crypto.randomUUID(), title, tinyStart, completed: false, subtasks: [] }],
     })),
   addWeeklyTask: ({ title, tinyStart }) =>
     set((s) => ({
-      weeklyTasks: [...s.weeklyTasks, { id: crypto.randomUUID(), title, tinyStart, progress: 0, subtasks: [] }],
+      weeklyTasks: [...s.weeklyTasks, { id: crypto.randomUUID(), title, tinyStart, completed: false, subtasks: [] }],
     })),
   addMonthlyTask: ({ title, tinyStart }) =>
     set((s) => ({
-      monthlyTasks: [...s.monthlyTasks, { id: crypto.randomUUID(), title, tinyStart, progress: 0, subtasks: [] }],
+      monthlyTasks: [...s.monthlyTasks, { id: crypto.randomUUID(), title, tinyStart, completed: false, subtasks: [] }],
     })),
 
-  setTaskProgress: (scope, id, progress) =>
+  toggleTaskComplete: (scope, id) =>
     set((s) => ({
-      [`${scope}Tasks`]: s[`${scope}Tasks`].map((t: Task) => (t.id === id ? { ...t, progress } : t)),
-    })),
-  markTaskDone: (scope, id) =>
-    set((s) => ({
-      [`${scope}Tasks`]: s[`${scope}Tasks`].map((t: Task) => (t.id === id ? { ...t, progress: 10 } : t)),
+      [`${scope}Tasks`]: s[`${scope}Tasks`].map((t: Task) => (t.id === id ? { ...t, completed: !t.completed } : t)),
     })),
   removeTask: (scope, id) =>
     set((s) => ({

@@ -12,7 +12,7 @@ export default function TaskList({
   tasks: Task[]; 
   scope: "today" | "weekly" | "monthly";
 }) {
-  const { setTaskProgress, markTaskDone, removeTask, addSubtask, toggleSubtask } = useAppStore();
+  const { toggleTaskComplete, removeTask, addSubtask, toggleSubtask } = useAppStore();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [addingSubtaskFor, setAddingSubtaskFor] = useState<string | null>(null);
   const [newSubtaskText, setNewSubtaskText] = useState("");
@@ -43,12 +43,6 @@ export default function TaskList({
                 Edit
               </button>
               <button
-                onClick={() => markTaskDone(scope, task.id)}
-                className="rounded-xl bg-neutral-900 px-3 py-2 text-xs font-medium text-white hover:bg-neutral-800"
-              >
-                Done
-              </button>
-              <button
                 onClick={() => removeTask(scope, task.id)}
                 className="rounded-xl border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
               >
@@ -57,24 +51,17 @@ export default function TaskList({
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-3">
-            <span className="text-xs text-neutral-500">Progress</span>
+          <div className="mt-4 flex items-center gap-2">
             <input
-              type="range"
-              min={0}
-              max={10}
-              value={task.progress}
-              onChange={(e) => setTaskProgress(scope, task.id, Number(e.target.value))}
-              className="flex-1"
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => toggleTaskComplete(scope, task.id)}
+              className="h-5 w-5 rounded border-neutral-300"
             />
-            <span className="w-8 text-right text-sm font-semibold text-neutral-900">{task.progress}</span>
+            <span className={`text-sm font-medium ${task.completed ? "text-green-600" : "text-neutral-700"}`}>
+              {task.completed ? "Completed" : "Mark as complete"}
+            </span>
           </div>
-
-          {task.progress === 10 && (
-            <div className="mt-2 rounded-xl bg-green-50 px-3 py-2 text-xs text-green-700">
-              ✓ Completed
-            </div>
-          )}
 
           {task.subtasks.length > 0 && (
             <div className="mt-4 space-y-2">
